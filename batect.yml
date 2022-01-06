@@ -1,0 +1,91 @@
+containers:
+  database:
+    image: postgres:14.1
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: S2MG5yNW2X87QKDa
+
+  build-env:
+    image: mcr.microsoft.com/dotnet/sdk:6.0
+    volumes:
+      - local: .
+        container: /code
+      - type: cache
+        name: nuget-cache
+        container: /root/.nuget/packages
+      - type: cache
+        name: DotnetSample.WebAPI
+        container: /code/DotnetSample.WebAPI/obj
+    working_directory: /code
+
+  app:
+    image: mcr.microsoft.com/dotnet/sdk:6.0
+    volumes:
+      - local: .
+        container: /code
+      - type: cache
+        name: nuget-cache
+        container: /root/.nuget/packages
+      - type: cache
+        name: DotnetSample.WebAPI
+        container: /code/DotnetSample.WebAPI/obj
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_URLS: "http://localhost:62118"
+      ASPNETCORE_ConnectionStrings__DotnetSample: "Host=database;Port=5432;Database=postgres;Username=postgres;Password=S2MG5yNW2X87QKDa"
+    ports:
+      - 62118:62118
+    command: dotnet run --project DotnetSample.WebAPI
+    dependencies:
+      - database
+
+  e2e-env:
+    image: cypress/included:8.7.0
+    volumes:
+      - local: .
+        container: /code
+        options: cached
+    working_directory: /code
+    run_as_current_user:
+      enabled: true
+      home_directory: /home/container-user
+    shm_size: 1G
+
+tasks:
+  build:
+    description: Build app
+    run:
+      container: build-env
+      command: dotnet build
+
+  clean:
+    description: Clean app
+    run:
+      container: build-env
+      command: dotnet clean
+
+  run:
+    description: Run app
+    run:
+      container: build-env
+      command: dotnet run --project DotnetSample.WebAPI
+      ports:
+        - 62118:62118
+      environment:
+        ASPNETCORE_ENVIRONMENT: "Development"
+        ASPNETCORE_URLS: "http://localhost:62118"
+        ASPNETCORE_ConnectionStrings__DotnetSample: "Host=database;Port=5432;Database=postgres;Username=postgres;Password=S2MG5yNW2X87QKDa"
+    dependencies:
+      - database
+
+  e2e:
+    description: Run e2e tests
+    run:
+      container: build-env
+#      command: npm run cy:run --config baseUrl=http://app:80
+      command: curl http://app:62118/HealthCheck
+    dependencies:
+      - app
