@@ -1,8 +1,6 @@
 containers:
   database:
-    image: postgres:14.1
-    ports:
-      - 5432:5432
+    build_directory: .batect/database
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
@@ -22,7 +20,7 @@ containers:
     working_directory: /code
 
   app:
-    image: mcr.microsoft.com/dotnet/sdk:6.0
+    build_directory: .batect/app
     volumes:
       - local: .
         container: /code

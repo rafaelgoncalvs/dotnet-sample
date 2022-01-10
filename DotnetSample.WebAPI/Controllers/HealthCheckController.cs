@@ -15,10 +15,10 @@ public class HealthCheckController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<HealthCheckDto> Get()
+    public async Task<string> Get()
     {
         var date = await GetCurrentDate();
-        return new HealthCheckDto { Date = date };
+        return "Healthy";
     }
 
     private async Task<DateTime> GetCurrentDate()
