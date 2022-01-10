@@ -41,17 +41,20 @@ containers:
     dependencies:
       - database
 
+#  e2e-env:
+#    image: cypress/included:8.7.0
+#    volumes:
+#      - local: .
+#        container: /code
+#        options: cached
+#    working_directory: /code
+#    run_as_current_user:
+#      enabled: true
+#      home_directory: /home/container-user
+#    shm_size: 1G
+
   e2e-env:
-    image: cypress/included:8.7.0
-    volumes:
-      - local: .
-        container: /code
-        options: cached
-    working_directory: /code
-    run_as_current_user:
-      enabled: true
-      home_directory: /home/container-user
-    shm_size: 1G
+    image: mcr.microsoft.com/dotnet/sdk:6.0
 
 tasks:
   build:
@@ -83,8 +86,7 @@ tasks:
   e2e:
     description: Run e2e tests
     run:
-#      container: e2e-env
-      container: build-env
+      container: e2e-env
 #      command: npm run cy:run --config baseUrl=http://app:80
       command: curl http://app:62118/HealthCheck
     dependencies:
