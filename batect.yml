@@ -83,6 +83,7 @@ tasks:
   e2e:
     description: Run e2e tests
     run:
+#      container: e2e-env
       container: build-env
 #      command: npm run cy:run --config baseUrl=http://app:80
       command: curl http://app:62118/HealthCheck
